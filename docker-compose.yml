@@ -1,0 +1,61 @@
+version: "3.9"
+
+# Copyright (c) 2025 Mimer Information Technology
+
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+#
+# See license for more details.
+services:
+  mimersql:
+    image: mimersql/mimersql_v11.0:latest
+    container_name: mimersql
+#    ports:
+#      - "1365:1360"
+    volumes:
+      - mimer_mcp_data:/data
+    networks:
+      - mimer_net
+    environment:
+      CREATE_EXAMPLEDB: "YES"
+
+  mimer-mcp-server:
+    image: mimer-mcp-server:latest
+    container_name: mimer-mcp-server
+    environment:
+      MCP_TRANSPORT: ${MCP_TRANSPORT:-stdio}
+      MCP_HTTP_HOST: 0.0.0.0
+      MCP_HTTP_PORT: 3333
+    ports:
+      - "3333:3333"
+    depends_on:
+      - mimersql
+    networks:
+      - mimer_net
+    env_file:
+      - ./.env_docker_compose
+
+
+networks:
+  mimer_net:
+    name: mimer_net
+    driver: bridge
+
+volumes:
+  mimer_mcp_data:
+    name: mimer_mcp_data

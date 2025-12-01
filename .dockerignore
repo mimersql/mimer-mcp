@@ -1,0 +1,56 @@
+# Git
+.git
+.gitignore
+
+# Environment files (contain secrets - should never be in Docker image)
+.env
+.env.*
+*.env
+
+# Python
+__pycache__
+*.py[cod]
+*.so
+*.egg
+*.egg-info
+.mypy_cache
+.pytest_cache
+
+# Virtual environments
+.venv
+venv
+env
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+*.code-workspace
+
+# Documentation
+*.md
+!README.md
+docs/
+site/
+
+# Tests
+tests/
+test*.py
+*_test.py
+
+# Data and models
+/data/
+/models/
+
+*.db
+*.rdb
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build artifacts
+dist/
+build/
+*.spec

@@ -38,9 +38,12 @@ import re
 
 from contextlib import asynccontextmanager
 
-def setup_logging(log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]) -> logging.Logger:
+
+def setup_logging(
+    log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
+) -> logging.Logger:
     """Set up logging for the MCP server based on configuration."""
-    
+
     try:
         numeric_level = getattr(logging, log_level.upper())
     except AttributeError:
@@ -55,14 +58,18 @@ def setup_logging(log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITI
     # Create console handler
     console = logging.StreamHandler()
     console.setLevel(numeric_level)
-    formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+    formatter = logging.Formatter(
+        "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    )
     console.setFormatter(formatter)
     logger.addHandler(console)
     logger.info(f"Logging level set to {numeric_level}")
-    
+
     return logger
 
+
 logger = setup_logging(config.LOG_LEVEL)
+
 
 @asynccontextmanager
 async def lifespan(server: FastMCP):
@@ -201,7 +208,11 @@ def get_table_info(
 
 
 @mcp.tool(
-    description="Execute a SQL SELECT query and return the results as a list of dictionaries",
+    description=(
+        "Execute a SQL SELECT query and return the results as a list of dictionaries."
+        "All queries must strictly follow SQL:2003 standard, e.g. FETCH, COALESCE, CASE."
+        "Avoid vendor-specific syntax."
+    )
 )
 def execute_query(
     query: Annotated[str, "SQL query to execute"],
@@ -242,7 +253,7 @@ def execute_query(
 )
 def list_stored_procedures() -> list[dict]:
     """List all stored procedures in the database (only 'READS SQL DATA' procedures).
-    
+
     Returns:
         A list of stored procedures with schema and name.
     """

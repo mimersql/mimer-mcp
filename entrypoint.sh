@@ -52,14 +52,5 @@ mimsqlhosts -a -t remote "${DB_DSN}" "${DB_HOST}" "${DB_PORT}" "${DB_PROTOCOL}" 
 echo "Registration complete"
 mimsqlhosts -l || true
 
-echo "Checking Mimer SQL connection..."
-
-while ! bsql -u${DB_USER} -p${DB_PASSWORD} --query="select count(*) from system.onerow" ${DB_DSN} >/dev/null 2>&1
-do
-  echo "Mimer database ${DB_DSN} is not ready yet - waiting 5 seconds"
-  sleep 3
-done
-
-echo "Mimer example database is ready"
 # Execute the main command
 exec "$@"

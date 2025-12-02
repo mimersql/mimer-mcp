@@ -64,7 +64,9 @@ Issues = "https://github.com/mimersql/mimer-mcp-server/issues"
 
 [tool.setuptools]
 package-dir = {"" = "src"}
-packages = ["mimer_mcp_server"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
 
 [tool.setuptools_scm]
 write_to = "src/mimer_mcp_server/_version.py"

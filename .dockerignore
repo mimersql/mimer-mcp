@@ -1,6 +1,6 @@
 # Git
-.git
-.gitignore
+#.git
+#.gitignore
 
 # Environment files (contain secrets - should never be in Docker image)
 .env

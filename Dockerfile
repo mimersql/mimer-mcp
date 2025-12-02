@@ -23,8 +23,12 @@
 # Use a Python image with uv pre-installed
 FROM ghcr.io/astral-sh/uv:python3.13-bookworm-slim AS uv
 
+RUN apt-get update && apt-get install -y --no-install-recommends git && rm -rf /var/lib/apt/lists/*
+
+
 # Install the project into `/app`
 WORKDIR /app
+
 
 # Enable bytecode compilation
 ENV UV_COMPILE_BYTECODE=1
@@ -40,6 +44,8 @@ RUN --mount=type=cache,target=/root/.cache/uv \
 
 # Add source code and install the project itself
 ADD . /app
+ADD .git /app/.git
+
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --frozen --no-dev --no-editable
 
@@ -49,7 +55,7 @@ WORKDIR /app
 
 # update and install necessary utilities
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends wget procps file sudo libdw1 && \
+    apt-get install -y --no-install-recommends wget git procps file sudo libdw1 && \
     rm -rf /var/lib/apt/lists/*
 
 # fetch the package and install it

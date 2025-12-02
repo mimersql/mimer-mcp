@@ -36,6 +36,9 @@ ENV UV_COMPILE_BYTECODE=1
 # Copy from the cache instead of linking since it's a mounted volume
 ENV UV_LINK_MODE=copy
 
+# setuptools-scm needs an explicit version when the git metadata is unavailable in the build context
+ENV SETUPTOOLS_SCM_PRETEND_VERSION_FOR_MIMER_MCP_SERVER=0.0.0
+
 # Install the project's dependencies
 RUN --mount=type=cache,target=/root/.cache/uv \
     --mount=type=bind,source=uv.lock,target=uv.lock \

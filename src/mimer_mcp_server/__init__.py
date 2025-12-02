@@ -27,5 +27,10 @@ execution, and query operations.
 
 from .server import mcp, main
 
-__version__ = "1.0.0"
+# Import version from setuptools-scm generated module
+try:
+    from ._version import __version__  # type: ignore
+except Exception:
+    __version__ = "0.0.0"
+
 __all__ = ["mcp", "main"]

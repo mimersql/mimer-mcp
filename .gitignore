@@ -99,3 +99,6 @@ target/
 
 /site/
 /docs/blog-post.md
+
+#Ignore generated version file
+src/mimer_mcp_server/_version.py

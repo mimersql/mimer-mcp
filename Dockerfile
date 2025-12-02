@@ -40,6 +40,11 @@ RUN --mount=type=cache,target=/root/.cache/uv \
 
 # Add source code and install the project itself
 ADD . /app
+
+# Set a fallback version for setuptools-scm
+ARG PSEUDO_VERSION=0.1.0
+ENV SETUPTOOLS_SCM_PRETEND_VERSION_FOR_MIMER_MCP_SERVER=${PSEUDO_VERSION}
+
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --frozen --no-dev --no-editable
 

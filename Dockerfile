@@ -47,7 +47,7 @@ RUN --mount=type=cache,target=/root/.cache/uv \
 
 # Add source code and install the project itself
 ADD . /app
-ADD .git /app/.git
+RUN if [ -d .git ]; then cp -r .git /app/.git; fi
 
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --frozen --no-dev --no-editable

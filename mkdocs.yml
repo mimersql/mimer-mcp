@@ -56,6 +56,7 @@ nav:
   - About:
     - License: about/license.md
     - Release Notes: about/CHANGELOG.md
+    - Security Policy: SECURITY.md
 
 plugins:
   - mkdocstrings

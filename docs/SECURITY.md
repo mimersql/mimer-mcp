@@ -1,12 +1,24 @@
-# Reporting Security Issues
+# Security Policy
 
 We take the security of the Mimer MCP Server seriously. We appreciate your efforts to responsibly disclose your findings, and will make every effort to acknowledge your contributions.
 
-### How to Report
+## Reporting Security Issues
 
-To report a security issues, please use the GitHub Security Advisory ["Report a Vulnerability"](https://github.com/electron/electron/security/advisories/new) tab.
+To report a security issue, please [contact us](https://developer.mimer.com/about/contact/).
 
-You should receive a response within 6 business days. If for some reason you do not, please [contact us](https://developer.mimer.com/about/contact/).
+You should receive a response within 6 business days. If for some reason you do not, please follow up to ensure we received your report.
+
+### What to Include
+
+To help us better understand and resolve the issue, please include as much of the following information as possible:
+
+- **Type of vulnerability** 
+- **Full paths** of source file(s) related to the vulnerability
+- **Location** of the affected source code (tag/branch/commit or direct URL)
+- **Step-by-step instructions** to reproduce the issue
+- **Proof-of-concept or exploit code** (if possible)
+- **Impact** of the vulnerability, including how an attacker might exploit it
+- Any special configuration required to reproduce the issue
 
 ## Security Best Practices
 

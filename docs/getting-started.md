@@ -16,7 +16,7 @@ Before running the server, you need to configure your database connection settin
 
 ## Setting Up Your Environment File
 
-An example configuration file is provided in `.env.example`. You can copy the example configuration file to create your own `.env` file:
+An example configuration file is provided in `.env.example` (See [GitHub Repo](https://github.com/mimersql/mimer-mcp/blob/main/.env.example)). You can copy the example configuration file to create your own `.env` file:
 
 ```bash
 cp .env.example .env
@@ -166,22 +166,19 @@ Create a file named `mcp.json` in the `.vscode` folder of your workspace with th
 	"servers": {
 		"mimer-mcp-server": {
 			"type": "stdio",
-			"command": "uv",
+			"command": "uvx",
 			"args": [
-                "run",
-                "--with",
-                "fastmcp",
-                "fastmcp",
-                "run",
-                "/absolute/path/to/server.py" // (1)!
-			]
+				"mimer_mcp_server"
+			],
+			"env": {
+				"DOTENV_PATH": "/absolute/path/to/.env" // (1)!
+			}
 		}
-	},
-	"inputs": []
+	}
 }
 ```
 
-1. Replace `/absolute/path/to/.env` with the actual absolute path to your server file.
+1. Replace `/absolute/path/to/.env` with the actual absolute path to your environment configuration file on your machine.
 
 ### Starting the Server
 

@@ -725,7 +725,6 @@ class StoredProcedureManager:
         )
         with self.connection.cursor() as cursor:
             cursor.execute(sql, tuple(ordered_argument_values))
-            rows_affected = getattr(cursor, "rowcount", -1)
             columns = [desc[0] for desc in cursor.description]
             rows = cursor.fetchall()
             result = [dict(zip(columns, row)) for row in rows]

@@ -141,18 +141,15 @@ The Mimer SQL database will be stored in the docker volume called `mimer_mcp_dat
 	"servers": {
 		"mimer-mcp-server": {
 			"type": "stdio",
-			"command": "uv",
+			"command": "uvx",
 			"args": [
-                "run",
-                "--with",
-                "fastmcp",
-                "fastmcp",
-                "run",
-                "/absolute/path/to/server.py"
-			]
+				"mimer_mcp_server"
+			],
+			"env": {
+				"DOTENV_PATH": "/absolute/path/to/.env"
+			}
 		}
-	},
-	"inputs": []
+	}
 }
 ```
 

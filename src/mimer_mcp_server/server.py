@@ -32,7 +32,8 @@ from mimer_mcp_server.database import (
     get_connection,
     get_sqlmonitor_stats,
     get_miminfo_stats,
-    IndexManager
+    get_query_plan as _get_query_plan,
+    IndexManager,
 )
 import logging
 import mimer_mcp_server.config as config
@@ -378,6 +379,7 @@ def get_database_stats() -> str:
         logger.error(f"Error retrieving database statistics: {e}")
         raise ToolError(f"Error retrieving database statistics: {e}")
 
+
 @mcp.tool(
     description="List all indexes in the specified schema",
 )
@@ -401,6 +403,7 @@ def list_indexes(
         logger.error(f"Error listing indexes for schema '{schema}': {e}")
         raise ToolError(f"Error listing indexes for schema '{schema}': {e}")
 
+
 @mcp.tool(
     description="Create an index on the specified table and columns",
 )
@@ -423,12 +426,40 @@ def create_index(
             logger.debug(f"Creating index '{index_name}' on table '{schema}.{table}'")
             index_manager = IndexManager(con)
             index_manager.create_index(schema, table, index_name, columns)
-            logger.info(f"Index '{index_name}' created successfully on '{schema}.{table}'")
+            logger.info(
+                f"Index '{index_name}' created successfully on '{schema}.{table}'"
+            )
     except Exception as e:
         logger.error(f"Error creating index '{index_name}' on '{schema}.{table}': {e}")
-        raise ToolError(f"Error creating index '{index_name}' on '{schema}.{table}': {e}")
-    
-    
+        raise ToolError(
+            f"Error creating index '{index_name}' on '{schema}.{table}': {e}"
+        )
+
+
+@mcp.tool(
+    description="Get the query plan for a SQL query",
+)
+def get_query_plan(
+    sql_query: Annotated[str, "SQL query to get the execution plan for"],
+) -> dict:
+    """Get the execution plan for a SQL query using BSQL EXPLAIN.
+
+    Args:
+        sql_query (str): The SQL query to get the execution plan for.
+
+    Returns:
+        dict: Contains 'success' boolean, 'plan' with the query plan XML,
+              and 'error' message if applicable
+    """
+    try:
+        logger.debug(f"Getting query plan for SQL query: {sql_query}")
+        result = _get_query_plan(sql_query)
+        return result
+    except Exception as e:
+        logger.error(f"Error getting query plan for SQL query: {e}")
+        raise ToolError(f"Error getting query plan for SQL query: {e}")
+
+
 def main():
     """Entry point for the Mimer MCP server"""
     # setup_logging(level=config.LOG_LEVEL)

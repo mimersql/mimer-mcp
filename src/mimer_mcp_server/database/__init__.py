@@ -24,7 +24,7 @@ from .ddl_generator import DDLGenerator
 from .schema_inspector import SchemaInspector
 from .stored_procedure_manager import StoredProcedureManager
 from .connection import init_db_pool, close_db_pool, get_connection
-from .monitoring import get_miminfo_stats, get_sqlmonitor_stats
+from .monitoring import get_miminfo_stats, get_sqlmonitor_stats, get_query_plan
 from .index_manager import IndexManager
 
 __all__ = [
@@ -36,5 +36,6 @@ __all__ = [
     "get_connection",
     "get_miminfo_stats",
     "get_sqlmonitor_stats",
+    "get_query_plan",
     "IndexManager",
 ]

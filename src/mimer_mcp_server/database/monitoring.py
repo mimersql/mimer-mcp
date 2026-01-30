@@ -169,7 +169,7 @@ def get_query_plan(sql_query: str) -> dict:
                     stdin=script_input,
                     capture_output=True,
                     text=True,
-                    timeout=120,
+                    timeout=1800,
                 )
 
             output = result.stdout
@@ -208,7 +208,7 @@ def get_query_plan(sql_query: str) -> dict:
             return {
                 "success": False,
                 "plan": None,
-                "error": "BSQL execution timed out after 120 seconds",
+                "error": "BSQL execution timed out after 1800 seconds",
             }
         except Exception as e:
             logger.error(f"Unexpected error during query plan retrieval: {str(e)}")

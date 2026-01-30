@@ -23,6 +23,8 @@
 import os
 from fastmcp import FastMCP
 from fastmcp.exceptions import ToolError
+from fastmcp.prompts import Message
+from pydantic import Field
 from mimer_mcp_server.database import (
     DDLGenerator,
     SchemaInspector,
@@ -459,6 +461,35 @@ def get_query_plan(
         logger.error(f"Error getting query plan for SQL query: {e}")
         raise ToolError(f"Error getting query plan for SQL query: {e}")
 
+# Basic prompt
+@mcp.prompt(
+    description="Generates a user message for optimizing a SQL query.",
+)
+def query_optimization(
+    query: str = Field(description="The SQL query to optimize."),
+) -> str:
+    """Generates a user message for optimizing a SQL query."""
+    return f"""
+    You are a SQL query optimization specialist. Given a multi-table SQL query, 
+    use mimer sql mcp server to gather statistics and query plan and optimize the query. 
+    
+    <SQL>: {query}
+    
+    **Process:**
+    1. **Analyze**: generate the optimal execution plan using the MCP Server. You
+         should represent the execution plan using a bracket sequence, where HashJoin, NestLoopJoin, or MergeJoin are used to join the tables
+         in the SQL query.
+    2. **Rewrite**: reconstruct the query based on the optimimal execution plan.
+    3. **Validate**: Execute both queries and compare results. If results differ,
+            return to step 2.
+            
+    Let’s think step by step and show your reasoning before showing the final output.
+    
+    **Output Format:**
+    <SQL>
+    [Final Query goes here]
+    </SQL>
+    """
 
 def main():
     """Entry point for the Mimer MCP server"""

@@ -122,11 +122,6 @@ def get_query_plan(sql_query: str) -> dict:
     Returns:
         dict: Contains 'success' boolean, 'plan' with the query plan XML,
               and 'error' message if applicable
-
-    Example:
-        >>> result = get_query_plan("SELECT * FROM users WHERE id = 1")
-        >>> if result['success']:
-        ...     print(result['plan'])  # XML execution plan
     """
     # Create a temporary script file for BSQL
     with tempfile.NamedTemporaryFile(

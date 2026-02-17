@@ -461,6 +461,7 @@ def get_query_plan(
         logger.error(f"Error getting query plan for SQL query: {e}")
         raise ToolError(f"Error getting query plan for SQL query: {e}")
 
+
 # Basic prompt
 @mcp.prompt(
     description="Generates a user message for optimizing a SQL query.",
@@ -469,27 +470,28 @@ def query_optimization(
     query: str = Field(description="The SQL query to optimize."),
 ) -> str:
     """Generates a user message for optimizing a SQL query."""
-    return f"""
-    You are a SQL query optimization specialist. Given a multi-table SQL query, 
-    use mimer sql mcp server to gather statistics and query plan and optimize the query. 
-    
-    <SQL>: {query}
-    
-    **Process:**
-    1. **Analyze**: generate the optimal execution plan using the MCP Server. You
-         should represent the execution plan using a bracket sequence, where HashJoin, NestLoopJoin, or MergeJoin are used to join the tables
-         in the SQL query.
-    2. **Rewrite**: reconstruct the query based on the optimimal execution plan.
-    3. **Validate**: Execute both queries and compare results. If results differ,
-            return to step 2.
-            
-    Let’s think step by step and show your reasoning before showing the final output.
-    
-    **Output Format:**
-    <SQL>
-    [Final Query goes here]
-    </SQL>
-    """
+    return f"""You are a SQL query optimization specialist in Mimer SQL. Given a multi-table SQL query, 
+use mimer sql mcp server to gather query plan and optimize the query. 
+
+<original_query>{query}</original_query>
+
+<instructions>
+
+1. **Analyze**: generate the optimal execution plan using the tools from Mimer MCP Server. You should represent the execution plan using a bracket sequence, where HashJoin, NestLoopJoin, or MergeJoin are used to join the tables in the SQL query.
+
+2. **Rewrite**: rewrite the {{ORIGINAL_QUERY}} based on the optimimal execution plan for Mimer SQL. Use context7 to look up for SQL best practices. <tips>To force a join order, use {{ORDER}}, e.g., SELECT * FROM {{ORDER}} table1 t1 JOIN table2 t2 ON t1.id = t2.id.</tips>
+
+3. **Validate**: Execute {{ORIGINAL_QUERY}} and the revised query against Mimer, compare both results. Costs should be decreased. If results differ, return to step 2 until {{FINAL_OPTIMIZED_QUERY}} returns the same result as {{ORIGINAL_QUERY}}.
+
+Let’s think step by step and show your reasoning before showing the final output.
+</instructions>
+
+**Output Format:**
+<SQL>
+{{FINAL_OPTIMIZED_QUERY}}
+</SQL>
+"""
+
 
 def main():
     """Entry point for the Mimer MCP server"""

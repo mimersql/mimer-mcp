@@ -58,7 +58,7 @@ This tool retrieves a complete list of all schemas (databases) available in the 
     ```
 
     ```
-    What schemas exist in this Mimer database?
+    What schemas exist in this Mimer SQL database?
     ```
 
 1. Note: Tool selection by the LLM is non-deterministic and depends on the specific model, prompt phrasing, and conversation context. The same prompt may result in different tool choices across different LLM interactions.

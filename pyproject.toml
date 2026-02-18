@@ -27,7 +27,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "mimer-mcp-server"
 dynamic = ["version"]
-description = "A MCP server with Mimer Database Connectivity"
+description = "A MCP server with Mimer SQL Database Connectivity"
 readme = "README.md"
 authors = [
     { name = "Chananya Pomkaew", email = "chananya.pomkaew@mimer.com" },

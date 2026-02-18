@@ -44,7 +44,7 @@ DB_PORT="${DB_PORT:-1360}"
 DB_PROTOCOL="${DB_PROTOCOL:-tcp}"
 
 # Register the remote database
-echo "Registering Mimer database: ${DB_DSN} at ${DB_HOST}:${DB_PORT} (protocol: ${DB_PROTOCOL})"
+echo "Registering Mimer SQL database: ${DB_DSN} at ${DB_HOST}:${DB_PORT} (protocol: ${DB_PROTOCOL})"
 mimsqlhosts -a -t remote "${DB_DSN}" "${DB_HOST}" "${DB_PORT}" "${DB_PROTOCOL}" || {
     echo "WARNING: Database registration failed, but continuing..."
 }
@@ -56,10 +56,10 @@ echo "Checking Mimer SQL connection..."
 
 while ! bsql -u${DB_USER} -p${DB_PASSWORD} --query="select count(*) from system.onerow" ${DB_DSN} >/dev/null 2>&1
 do
-  echo "Mimer database ${DB_DSN} is not ready yet - waiting 5 seconds"
+  echo "Mimer SQL database ${DB_DSN} is not ready yet - waiting 5 seconds"
   sleep 3
 done
 
-echo "Mimer example database is ready"
+echo "Mimer SQL example database is ready"
 # Execute the main command
 exec "$@"

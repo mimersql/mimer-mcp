@@ -108,7 +108,7 @@ Docker provides an isolated environment and simplifies deployment across differe
 	}
 	```
 
-	1. The `--add-host=host.docker.internal:host-gateway` flag allows the Docker container to connect to your Mimer database running on the host machine.
+	1. The `--add-host=host.docker.internal:host-gateway` flag allows the Docker container to connect to your Mimer SQL database running on the host machine.
 
 	2. Replace `/absolute/path/to/.env` with the actual absolute path to your environment configuration file. See [Configuration Options documentation](#configuration-options)  for more details.
 
@@ -198,6 +198,6 @@ Once your server is running, you can access its tools through Copilot:
 
 3. Click the **Tools** button to view all available tools and ensure the tools from **Mimer MCP Server** are selected ![Mimer MCP Tools](images/mimer-mcp-tools.png)
 
-You're now ready to interact with your Mimer database through natural language queries in Copilot! 
+You're now ready to interact with your Mimer SQL database through natural language queries in Copilot! 
 
 See the [Examples documentation](mimer-mcp-server/examples.md) how to prompt the AI agents to utilize tools from Mimer MCP Server.

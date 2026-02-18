@@ -1,0 +1,106 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.mimersql/mimer-mcp",
+  "description": "A MCP server with Mimer Database Connectivity",
+  "repository": {
+    "url": "https://github.com/mimersql/mimer-mcp",
+    "source": "github"
+  },
+  "version": "1.0.3",
+  "packages": [
+    {
+      "registryType": "pypi",
+      "identifier": "mimer-mcp-server",
+      "version": "1.0.3",
+      "transport": {
+        "type": "stdio"
+      },
+      "environmentVariables": [
+        {
+          "name": "DB_DSN",
+          "description": "Mimer SQL Database DSN",
+          "isRequired": true,
+          "format": "string",
+          "isSecret": false
+        },
+        {
+          "name": "DB_USER",
+          "description": "Database user",
+          "isRequired": true,
+          "format": "string",
+          "isSecret": false
+        },
+        {
+          "name": "DB_PASSWORD",
+          "description": "Database password",
+          "isRequired": true,
+          "format": "string",
+          "isSecret": true
+        },
+        {
+          "name": "DB_HOST",
+          "description": "Database host",
+          "isRequired": false,
+          "format": "string",
+          "isSecret": false
+        },
+        {
+          "name": "DB_PORT",
+          "description": "Database port",
+          "isRequired": false,
+          "format": "string",
+          "isSecret": false
+        },
+        {
+          "name": "DB_PROTOCOL",
+          "description": "Database protocol",
+          "isRequired": false,
+          "format": "string",
+          "isSecret": false
+        },
+        {
+          "name": "DB_POOL_INITIAL_CON",
+          "description": "Initial number of idle connections in the pool",
+          "isRequired": false,
+          "format": "number",
+          "isSecret": false
+        },
+        {
+          "name": "DB_POOL_MAX_UNUSED",
+          "description": "Maximum number of unused connections in the pool",
+          "isRequired": false,
+          "format": "number",
+          "isSecret": false
+        },
+        {
+          "name": "DB_POOL_MAX_CON",
+          "description": "Maximum number of connections allowed",
+          "isRequired": false,
+          "format": "number",
+          "isSecret": false
+        },
+        {
+          "name": "DB_POOL_BLOCK",
+          "description": "Block and wait for connection when exceeding max connections",
+          "isRequired": false,
+          "format": "boolean",
+          "isSecret": false
+        },
+        {
+          "name": "DB_POOL_DEEP_HEALTH_CHECK",
+          "description": "Deep health check - validates connection health before getting from pool",
+          "isRequired": false,
+          "format": "boolean",
+          "isSecret": false
+        },
+        {
+          "name": "MCP_LOG_LEVEL",
+          "description": "Logging level for the MCP server (DEBUG, INFO, WARNING, ERROR, CRITICAL)",
+          "isRequired": false,
+          "format": "string",
+          "isSecret": false
+        }
+      ]
+    }
+  ]
+}

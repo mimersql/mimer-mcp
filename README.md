@@ -2,6 +2,8 @@
 
 A Model Context Protocol (MCP) server that provides Mimer database connectivity to browse database schemas, execute read-only queries with parameterization support, and manage stored procedures.
 
+<!-- mcp-name: io.github.mimersql/mimer-mcp -->
+
 ## Available Tools
 
 ### Database Schema Tools

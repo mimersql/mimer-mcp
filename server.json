@@ -1,17 +1,17 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.github.mimersql/mimer-mcp",
-  "description": "A MCP server with Mimer SQL Database Connectivity",
+  "description": "An MCP server with Mimer SQL Database Connectivity",
   "repository": {
     "url": "https://github.com/mimersql/mimer-mcp",
     "source": "github"
   },
-  "version": "1.0.4",
+  "version": "1.0.5",
   "packages": [
     {
       "registryType": "pypi",
       "identifier": "mimer-mcp-server",
-      "version": "1.0.4",
+      "version": "1.0.5",
       "transport": {
         "type": "stdio"
       },

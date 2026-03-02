@@ -20,16 +20,6 @@
 #
 # See license for more details.
 
-"""
-Mimer SQL Performance Monitoring and Query Analysis Tools
-
-This module provides utilities for monitoring database performance and
-analyzing query execution plans using Mimer SQL CLI tools:
-- Runtime statistics (miminfo)
-- SQL monitoring (sqlmonitor)
-- Query execution plan analysis (bsql EXPLAIN)
-"""
-
 import logging
 import subprocess
 import tempfile
@@ -46,13 +36,12 @@ DB_CONFIG = {
 }
 
 # ============================================================================
-# Runtime Statistics Monitoring
+# Statistics Monitoring
 # ============================================================================
 
-
-# MIMINFO
 def get_miminfo_stats() -> str:
-    """Retrieve Mimer SQL runtime statistics using the miminfo CLI tool.
+    """Retrieve Mimer SQL runtime statistics using the MIMINFO tool. This includes general, 
+    page management, transaction management, background thread, databanks, and table stats.
 
     Returns:
         str: The output of the miminfo command containing runtime statistics.
@@ -78,7 +67,8 @@ def get_miminfo_stats() -> str:
 
 # SQLMONITOR
 def get_sqlmonitor_stats() -> str:
-    """Retrieve SQL monitoring statistics using the sqlmonitor CLI tool.
+    """Retrieve SQL monitoring statistics using the SQLMONITOR tool. This tool can be used to locate expensive SQL statements, or
+    to understand which applications is using what resources in the database server.
 
     Returns:
         str: The output of the sqlmonitor command.

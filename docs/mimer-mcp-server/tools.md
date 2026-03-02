@@ -394,7 +394,7 @@ The Mimer SQL server performs numerous transformatons and computes the most effi
 
 **get_database_stats**
 
-This tool gets Mimer SQL database statistics using miminfo and sqlmonitor tools.
+This tool gets Mimer SQL database statistics using MIMINFO and SQLMONITOR tools. Read more about [MIMINFO](https://docs.mimer.com/MimerSqlManual/latest/index.html#t=Manuals%2FManaging_DB_server%2FManaging_DB_server.htm%23TOC_MIMINFO_Systembc-6&rhtocid=_4_3_5) and [SQLMONITOR](https://docs.mimer.com/MimerSqlManual/latest/Manuals/sqlmonitor/sqlmonitor.htm).
 
 **Tool description**
 

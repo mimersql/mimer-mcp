@@ -117,7 +117,6 @@ def close_db_pool():
     """Close all connections in the pool.
 
     This is called during application shutdown to clean up all database connections.
-
     """
     global pool
     if pool is not None:

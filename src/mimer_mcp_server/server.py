@@ -23,6 +23,8 @@
 import os
 from fastmcp import FastMCP
 from fastmcp.exceptions import ToolError
+from fastmcp.prompts import Message
+from pydantic import Field
 from mimer_mcp_server.database import (
     DDLGenerator,
     SchemaInspector,
@@ -30,6 +32,10 @@ from mimer_mcp_server.database import (
     init_db_pool,
     close_db_pool,
     get_connection,
+    get_sqlmonitor_stats,
+    get_miminfo_stats,
+    get_query_plan as _get_query_plan,
+    IndexManager,
 )
 import logging
 import mimer_mcp_server.config as config
@@ -38,9 +44,12 @@ import re
 
 from contextlib import asynccontextmanager
 
-def setup_logging(log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]) -> logging.Logger:
+
+def setup_logging(
+    log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
+) -> logging.Logger:
     """Set up logging for the MCP server based on configuration."""
-    
+
     try:
         numeric_level = getattr(logging, log_level.upper())
     except AttributeError:
@@ -55,14 +64,18 @@ def setup_logging(log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITI
     # Create console handler
     console = logging.StreamHandler()
     console.setLevel(numeric_level)
-    formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+    formatter = logging.Formatter(
+        "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    )
     console.setFormatter(formatter)
     logger.addHandler(console)
     logger.info(f"Logging level set to {numeric_level}")
-    
+
     return logger
 
+
 logger = setup_logging(config.LOG_LEVEL)
+
 
 @asynccontextmanager
 async def lifespan(server: FastMCP):
@@ -242,7 +255,7 @@ def execute_query(
 )
 def list_stored_procedures() -> list[dict]:
     """List all stored procedures in the database (only 'READS SQL DATA' procedures).
-    
+
     Returns:
         A list of stored procedures with schema and name.
     """
@@ -347,6 +360,137 @@ def execute_stored_procedure(
         raise ToolError(
             f"Error executing stored procedure {procedure_schema}.{procedure_name}: {e}"
         )
+
+
+@mcp.tool(
+    description="Get database statistics",
+)
+def get_database_stats() -> str:
+    """Get Mimer SQL database statistics using miminfo and sqlmonitor tools.
+
+    Returns:
+        A string containing the database statistics.
+    """
+    try:
+        miminfo_stats = get_miminfo_stats()
+        sqlmonitor_stats = get_sqlmonitor_stats()
+        return (
+            f"MIMINFO Stats:\n{miminfo_stats}\n\nSQLMONITOR Stats:\n{sqlmonitor_stats}"
+        )
+    except Exception as e:
+        logger.error(f"Error retrieving database statistics: {e}")
+        raise ToolError(f"Error retrieving database statistics: {e}")
+
+
+@mcp.tool(
+    description="List all indexes in the specified schema",
+)
+def list_indexes(
+    schema: Annotated[str, "Schema name to filter indexes"],
+) -> list[dict]:
+    """List all indexes in the specified schema.
+
+    Args:
+        schema (str): The schema name to filter indexes.
+    Returns:
+        A list of indexes in the given schema.
+    """
+    try:
+        with get_connection() as con:
+            logger.debug(f"Listing indexes for schema '{schema}'")
+            index_manager = IndexManager(con)
+            indexes = index_manager.list_indexes(schema)
+            return indexes
+    except Exception as e:
+        logger.error(f"Error listing indexes for schema '{schema}': {e}")
+        raise ToolError(f"Error listing indexes for schema '{schema}': {e}")
+
+
+@mcp.tool(
+    description="Create an index on the specified table and columns",
+)
+def create_index(
+    schema: Annotated[str, "Schema name where the table resides"],
+    table: Annotated[str, "Table name on which to create the index"],
+    index_name: Annotated[str, "Name of the index to create"],
+    columns: Annotated[list[str], "List of column names to include in the index"],
+) -> None:
+    """Create an index on the specified table and columns.
+
+    Args:
+        schema (str): Schema name where the table resides.
+        table (str): Table name on which to create the index.
+        index_name (str): Name of the index to create.
+        columns (list[str]): List of column names to include in the index.
+    """
+    try:
+        with get_connection() as con:
+            logger.debug(f"Creating index '{index_name}' on table '{schema}.{table}'")
+            index_manager = IndexManager(con)
+            index_manager.create_index(schema, table, index_name, columns)
+            logger.info(
+                f"Index '{index_name}' created successfully on '{schema}.{table}'"
+            )
+    except Exception as e:
+        logger.error(f"Error creating index '{index_name}' on '{schema}.{table}': {e}")
+        raise ToolError(
+            f"Error creating index '{index_name}' on '{schema}.{table}': {e}"
+        )
+
+
+@mcp.tool(
+    description="Get the query plan for a SQL query",
+)
+def get_query_plan(
+    sql_query: Annotated[str, "SQL query to get the execution plan for"],
+) -> dict:
+    """Get the execution plan for a SQL query using BSQL EXPLAIN.
+
+    Args:
+        sql_query (str): The SQL query to get the execution plan for.
+
+    Returns:
+        dict: Contains 'success' boolean, 'plan' with the query plan XML,
+              and 'error' message if applicable
+    """
+    try:
+        logger.debug(f"Getting query plan for SQL query: {sql_query}")
+        result = _get_query_plan(sql_query)
+        return result
+    except Exception as e:
+        logger.error(f"Error getting query plan for SQL query: {e}")
+        raise ToolError(f"Error getting query plan for SQL query: {e}")
+
+
+# Basic prompt
+@mcp.prompt(
+    description="Generates a user message for optimizing a SQL query.",
+)
+def query_optimization(
+    query: str = Field(description="The SQL query to optimize."),
+) -> str:
+    """Generates a user message for optimizing a SQL query."""
+    return f"""You are a SQL query optimization specialist in Mimer SQL. Given a multi-table SQL query, 
+use mimer sql mcp server to gather query plan and optimize the query. 
+
+<original_query>{query}</original_query>
+
+<instructions>
+
+1. **Analyze**: generate the optimal execution plan using the tools from Mimer MCP Server. You should represent the execution plan using a bracket sequence, where HashJoin, NestLoopJoin, or MergeJoin are used to join the tables in the SQL query.
+
+2. **Rewrite**: rewrite the {{ORIGINAL_QUERY}} based on the optimimal execution plan for Mimer SQL. Use context7 to look up for SQL best practices. <tips>To force a join order, use {{ORDER}}, e.g., SELECT * FROM {{ORDER}} table1 t1 JOIN table2 t2 ON t1.id = t2.id.</tips>
+
+3. **Validate**: Execute {{ORIGINAL_QUERY}} and the revised query against Mimer, compare both results. Costs should be decreased. If results differ, return to step 2 until {{FINAL_OPTIMIZED_QUERY}} returns the same result as {{ORIGINAL_QUERY}}.
+
+Let’s think step by step and show your reasoning before showing the final output.
+</instructions>
+
+**Output Format:**
+<SQL>
+{{FINAL_OPTIMIZED_QUERY}}
+</SQL>
+"""
 
 
 def main():

@@ -374,3 +374,83 @@ This tool executes a stored procedure in the database with the provided paramete
   ]
 }
 ```
+
+---
+
+### Database Administration Tools
+
+**get_query_plan**
+
+The Mimer SQL server performs numerous transformatons and computes the most efficient access path the get the query results. This tool gets the results of the optimization proces whcih can help in the construction of efficient queries. The output is XML-based. Learn more about [Mimer SQL Explain](https://docs.mimer.com/MimerSqlManual/latest/Manuals/App_explain/App_explain.htm)
+
+#### ::: mimer_mcp_server.server.get_query_plan
+
+**Response example** :material-information-outline:{ title="This example uses Mimer's Example Database and may be truncated for brevity." }
+```json
+{"success":true,"plan":"<select cost=\"375143530\" hits=\"1\" visits=\"375143530\">\n    <innerJoin cost=\"375143530\" hits=\"330\" visits=\"375143530\">\n      <innerJoin cost=\"375143200\" hits=\"330\" visits=\"375143200\">\n        <innerJoin cost=\"375142870\" hits=\"330\" visits=\"375142870\">\n          <innerJoin cost=\"375142540\" hits=\"330\" visits=\"375142540\">\n            <innerJoin cost=\"375142210\" hits=\"330\" visits=\"375142210\">\n              <innerJoin cost=\"375141880\" hits=\"330\" visits=\"375141880\">\n                <innerJoin cost=\"375139570\" hits=\"330\" visits=\"375139570\">\n                  <innerJoin cost=\"375139240\" hits=\"330\" visits=\"375139240\">\n                    <innerJoin cost=\"297590230\" hits=\"330\" visits=\"297590230\">\n                      <innerJoin cost=\"147040\" hits=\"330\" visits=\"147040\">\n                        <innerJoin cost=\"146710\" hits=\"330\" visits=\"146710\">\n                          <innerJoin cost=\"135820\" hits=\"330\" visits=\"135820\">\n                            <innerJoin cost=\"134830\" hits=\"330\" visits=\"134830\">\n                              <table name=\"keyword k\" order=\"1\"\nindex=\"SQL_PRIMARY_KEY_0000021697\" scan=\"sequential\" type=\"primary key\"\ncost=\"134170\" hits=\"10\" visits=\"134170\" rows=\"134170\"/>\n                              <table name=\"movie_keyword mk\" order=\"2\"\nindex=\"keyword_id_movie_keyword\" scan=\"leadingKeys\" type=\"index\" cost=\"66\"\nhits=\"33\" visits=\"66\" rows=\"4523930\"/>\n                            </innerJoin>\n                            <table name=\"complete_cast cc\" order=\"3\"\nindex=\"movie_id_complete_cast\" scan=\"leadingKeys\" type=\"index\" cost=\"3\"\nhits=\"1\" visits=\"3\" rows=\"135086\"/>\n                          </innerJoin>\n                          <table name=\"cast_info ci\" order=\"4\"\nindex=\"movie_id_cast_info\" scan=\"leadingKeys\" type=\"index\" cost=\"33\" hits=\"1\"\nvisits=\"33\" rows=\"36244344\"/>\n                        </innerJoin>\n                        <table name=\"char_name chn\" order=\"5\"\nindex=\"SQL_PRIMARY_KEY_0000021683\" scan=\"unique\" type=\"primary key\" cost=\"1\"\nhits=\"1\" visits=\"1\" rows=\"3140339\"/>\n                      </innerJoin>\n                      <table name=\"aka_name ak\" order=\"6\"\nindex=\"SQL_PRIMARY_KEY_0000021668\" scan=\"sequential\" type=\"primary key\"\ncost=\"901343\" hits=\"1\" visits=\"901343\" rows=\"901343\"/>\n                    </innerJoin>\n                    <table name=\"company_name cn\" order=\"7\"\nindex=\"SQL_PRIMARY_KEY_0000021690\" scan=\"sequential\" type=\"primary key\"\ncost=\"234997\" hits=\"1\" visits=\"234997\" rows=\"234997\"/>\n                  </innerJoin>\n                  <table name=\"name n\" order=\"8\"\nindex=\"SQL_PRIMARY_KEY_0000021704\" scan=\"unique\" type=\"primary key\" cost=\"1\"\nhits=\"1\" visits=\"1\" rows=\"4167491\"/>\n                </innerJoin>\n                <table name=\"movie_info_idx mi_idx\" order=\"9\"\nindex=\"movie_id_movie_info_idx\" scan=\"leadingKeys\" type=\"index\" cost=\"7\"\nhits=\"1\" visits=\"7\" rows=\"1380035\"/>\n              </innerJoin>\n              <table name=\"info_type it2\" order=\"10\"\nindex=\"SQL_PRIMARY_KEY_0000021521\" scan=\"unique\" type=\"primary key\" cost=\"1\"\nhits=\"1\" visits=\"1\" rows=\"113\"/>\n            </innerJoin>\n            <table name=\"title t\" order=\"11\" index=\"SQL_PRIMARY_KEY_0000021711\"\nscan=\"leadingKeys\" type=\"primary key\" cost=\"1\" hits=\"1\" visits=\"1\"\nrows=\"2528312\"/>\n          </innerJoin>\n          <table name=\"kind_type kt\" order=\"12\"\nindex=\"SQL_PRIMARY_KEY_0000021463\" scan=\"unique\" type=\"primary key\" cost=\"1\"\nhits=\"1\" visits=\"1\" rows=\"7\"/>\n        </innerJoin>\n        <table name=\"comp_cast_type cct2\" order=\"13\"\nindex=\"SQL_PRIMARY_KEY_0000021508\" scan=\"unique\" type=\"primary key\" cost=\"1\"\nhits=\"1\" visits=\"1\" rows=\"4\"/>\n      </innerJoin>\n      <table name=\"comp_cast_type cct1\" order=\"14\"\nindex=\"SQL_PRIMARY_KEY_0000021508\" scan=\"unique\" type=\"primary key\" cost=\"1\"\nhits=\"1\" visits=\"1\" rows=\"4\"/>\n    </innerJoin>\n  </select>","error":null}
+```
+
+---
+
+**get_database_stats**
+
+This tool gets Mimer SQL database statistics using MIMINFO and SQLMONITOR tools. Read more about [MIMINFO](https://docs.mimer.com/MimerSqlManual/latest/index.html#t=Manuals%2FManaging_DB_server%2FManaging_DB_server.htm%23TOC_MIMINFO_Systembc-6&rhtocid=_4_3_5) and [SQLMONITOR](https://docs.mimer.com/MimerSqlManual/latest/Manuals/sqlmonitor/sqlmonitor.htm).
+
+**Tool description**
+
+#### ::: mimer_mcp_server.server.get_database_stats
+
+**Response example** :material-information-outline:{ title="This example uses Mimer's Example Database and may be truncated for brevity." }
+```json
+
+```
+
+---
+
+**list_indexes**
+
+#### ::: mimer_mcp_server.server.list_indexes
+
+**Response example** :material-information-outline:{ title="This example uses Mimer's Example Database and may be truncated for brevity." }
+```json
+{
+  "result": [
+    {
+      "index_name": "person_id_aka_name",
+      "table_name": "aka_name",
+      "index_type": "INDEX",
+      "column_name": "person_id"
+    },
+    {
+      "index_name": "SQL_PRIMARY_KEY_0000021668",
+      "table_name": "aka_name",
+      "index_type": "PRIMARY KEY",
+      "column_name": "id"
+    },
+    {
+      "index_name": "kind_id_aka_title",
+      "table_name": "aka_title",
+      "index_type": "INDEX",
+      "column_name": "kind_id"
+    },
+    {
+      "index_name": "kind_id_aka_title",
+      "table_name": "aka_title",
+      "index_type": "INDEX",
+      "column_name": "id"
+    }
+  ]
+}
+```
+
+---
+
+**create_indexes**
+
+#### ::: mimer_mcp_server.server.create_index
+
+**Response example** :material-information-outline:{ title="This example uses Mimer's Example Database and may be truncated for brevity." }
+```json
+
+```
+

@@ -39,28 +39,20 @@ def reset_pool():
 @pytest.fixture
 def mock_config_vars(monkeypatch):
     """Set up required config variables for database connection."""
-    # monkeypatch.setattr(config, "DB_DSN", "test_dsn")
-    # monkeypatch.setattr(config, "DB_USER", "test_user")
-    # monkeypatch.setattr(config, "DB_PASSWORD", "test_password")
-    # # Reset optional configs
-    # monkeypatch.setattr(config, "DB_POOL_INITIAL_CON", None)
-    # monkeypatch.setattr(config, "DB_POOL_MAX_UNUSED", None)
-    # monkeypatch.setattr(config, "DB_POOL_MAX_CON", None)
-    # monkeypatch.setattr(config, "DB_POOL_BLOCK", None)
-    # monkeypatch.setattr(config, "DB_POOL_DEEP_HEALTH_CHECK", None)
     monkeypatch.setattr(
         connection,
         "DB_CONFIG",
         {
-            "dsn": "test_dsn", 
-            "user": "test_user", 
+            "dsn": "test_dsn",
+            "user": "test_user",
             "password": "test_password",
             "initialconnections": None,
             "maxunused": None,
             "maxconnections": None,
             "block": None,
             "deep_health_check": None,
-         },
+            "readonly": "true",
+        },
     )
 
 
@@ -92,6 +84,19 @@ def test_init_db_pool_success(mock_config_vars, mock_mimer_pool):
         assert pool is not None
         assert connection.pool == pool
         mock_mimer_pool.get_connection.assert_called_once()
+
+
+def test_init_db_pool_sets_readonly_true(mock_config_vars, mock_mimer_pool):
+    """Test pool initialization includes readonly=true in pool arguments."""
+    with patch("mimer_mcp_server.database.connection.MimerPool") as MockPool:
+        MockPool.return_value = mock_mimer_pool
+        connection.init_db_pool()
+
+        MockPool.assert_called_once()
+        call_kwargs = MockPool.call_args.kwargs
+
+        assert "readonly" in call_kwargs
+        assert str(call_kwargs["readonly"]).lower() == "true"
 
 
 def test_init_db_pool_missing_dsn(monkeypatch):
@@ -155,6 +160,7 @@ def test_init_db_pool_with_custom_config(mock_config_vars, monkeypatch):
         assert call_kwargs["maxconnections"] == 20
         assert call_kwargs["block"] is False
         assert call_kwargs["deep_health_check"] is True
+        assert str(call_kwargs["readonly"]).lower() == "true"
 
 
 def test_init_db_pool_creation_error(mock_config_vars):

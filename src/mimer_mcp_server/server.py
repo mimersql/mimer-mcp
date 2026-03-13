@@ -233,21 +233,18 @@ def execute_query(
         ValueError: if the query is not a SELECT statement.
     """
     logger.debug(f"Executing query: {query}")
-    if not re.match(r"^\s*SELECT", query, re.IGNORECASE):
-        raise ValueError("Only SELECT queries are allowed.")
-    else:
-        try:
-            with get_connection() as con:
-                with con.cursor() as cursor:
-                    cursor.execute(query, params)
-                    columns = [desc[0] for desc in cursor.description]
-                    rows = cursor.fetchall()
-                    result = [dict(zip(columns, row)) for row in rows]
-                    logger.debug(f"Read query returned {len(result)} rows")
-                    return result
-        except Exception as e:
-            logger.error(f"Database error executing query '{query}': {e}")
-            raise ToolError(f"Database error executing query '{query}': {e}")
+    try:
+        with get_connection() as con:
+            with con.cursor() as cursor:
+                cursor.execute(query, params)
+                columns = [desc[0] for desc in cursor.description]
+                rows = cursor.fetchall()
+                result = [dict(zip(columns, row)) for row in rows]
+                logger.debug(f"Read query returned {len(result)} rows")
+                return result
+    except Exception as e:
+        logger.error(f"Database error executing query '{query}': {e}")
+        raise ToolError(f"Database error executing query '{query}': {e}")
 
 
 @mcp.tool(

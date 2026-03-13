@@ -32,6 +32,7 @@ DB_CONFIG = {
     "dsn": config.DB_DSN,
     "user": config.DB_USER,
     "password": config.DB_PASSWORD,
+    "readonly": "true",
 }
 
 # Global pool variable

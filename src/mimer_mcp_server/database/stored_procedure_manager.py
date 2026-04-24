@@ -28,7 +28,7 @@ import datetime
 import re
 
 from mimer_mcp_server.database.schema_inspector import SchemaInspector
-from mimer_mcp_server.utils import format_sql_type
+from mimer_mcp_server.utils import format_sql_type, quote_ident
 
 
 logger = logging.getLogger(__name__)
@@ -710,7 +710,7 @@ class StoredProcedureManager:
 
         # Construct CALL with the number of placeholders equal to length of ordered_argument_values
         placeholders = ", ".join(["?"] * len(ordered_argument_values))
-        qualified_name = f'"{procedure_schema}"."{procedure_name}"'
+        qualified_name = f'{quote_ident(procedure_schema)}.{quote_ident(procedure_name)}'
         sql = (
             f"CALL {qualified_name}({placeholders})"
             if placeholders

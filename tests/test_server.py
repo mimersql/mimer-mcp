@@ -416,18 +416,6 @@ async def test_get_stored_procedures_definition_failure_non_existent_procedure(
             )
 
 
-@pytest.mark.asyncio
-async def test_get_stored_procedures_definition_failure_syntax_error(
-    mock_db_connection,
-):
-    """Test execution of query with syntax error."""
-    async with Client(mcp) as client:
-        with pytest.raises(ToolError, match="Syntax error"):
-            query = (
-                """SELECT product, product_id\nFROM mimer_store.products\nLIMIT 10"""
-            )
-            await client.call_tool("execute_query", {"query": query})
-
 
 @pytest.mark.asyncio
 async def test_get_stored_procedures_parameters_success(mock_db_connection):

@@ -22,6 +22,8 @@
 
 import logging
 
+from mimer_mcp_server.utils import quote_ident
+
 logger = logging.getLogger(__name__)
 
 
@@ -75,8 +77,8 @@ class IndexManager:
     def create_index(self, schema: str, table: str, index_name: str, columns: list) -> None:
         """Create an index on the specified table and columns"""
         logger.debug(f"Create index {index_name} on {schema}.{table}({', '.join(columns)})")
-        columns_str = ", ".join(columns)
-        sql = f'CREATE INDEX {index_name} ON {schema}.{table} ({columns_str})'
+        quoted_cols = ", ".join(quote_ident(c) for c in columns)
+        sql = f'CREATE INDEX {quote_ident(index_name)} ON {quote_ident(schema)}.{quote_ident(table)} ({quoted_cols})'
         with self.connection.cursor() as cursor:
             cursor.execute(sql)
         self.connection.commit()

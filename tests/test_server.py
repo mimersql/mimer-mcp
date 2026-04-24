@@ -26,7 +26,11 @@ from mcp.types import TextContent
 from fastmcp.exceptions import ToolError
 import logging
 import os
-from mimer_mcp_server.server import mcp, setup_logging, logger as server_logger
+from mimer_mcp_server.server import (
+    mcp,
+    setup_logging,
+    logger as server_logger,
+)
 from mimer_mcp_server.database import connection
 from mimer_mcp_server import config
 
@@ -78,7 +82,15 @@ async def test_list_tools():
     """Test listing available tools."""
     async with Client(mcp) as client:
         result = await client.list_tools()
-    assert len(result) == 12
+    readonly = config.DB_READONLY.lower() in {"1", "true", "yes"}
+    expected_count = 11 if readonly else 12
+    assert len(result) == expected_count
+
+    tool_names = {tool.name for tool in result}
+    if readonly:
+        assert "create_index" not in tool_names
+    else:
+        assert "create_index" in tool_names
 
 
 @pytest.mark.asyncio
@@ -295,7 +307,9 @@ async def test_execute_query_non_select(mock_db_connection_readonly):
 
 
 @pytest.mark.asyncio
-async def test_execute_query_non_select_allowed_when_readonly_false(monkeypatch, mock_db_connection):
+async def test_execute_query_non_select_allowed_when_readonly_false(
+    monkeypatch, mock_db_connection
+):
     """Non-SELECT query is not blocked by the regex guard when DB_READONLY=false.
 
     The query still fails (the test table/row may not exist), but the error is a
@@ -406,7 +420,9 @@ async def test_execute_query_stacked_update_blocked(mock_db_connection_readonly)
         with pytest.raises(ToolError):
             await client.call_tool(
                 "execute_query",
-                {"query": "SELECT 1; UPDATE mimer_store.products SET product = 'x' WHERE 1=1"},
+                {
+                    "query": "SELECT 1; UPDATE mimer_store.products SET product = 'x' WHERE 1=1"
+                },
             )
 
 
@@ -417,23 +433,31 @@ async def test_execute_query_stacked_insert_blocked(mock_db_connection_readonly)
         with pytest.raises(ToolError):
             await client.call_tool(
                 "execute_query",
-                {"query": "SELECT 1; INSERT INTO mimer_store.products VALUES ('x', 1, 1.0)"},
+                {
+                    "query": "SELECT 1; INSERT INTO mimer_store.products VALUES ('x', 1, 1.0)"
+                },
             )
 
 
 @pytest.mark.asyncio
-async def test_execute_query_cte_with_write_blocked_by_regex(mock_db_connection_readonly):
+async def test_execute_query_cte_with_write_blocked_by_regex(
+    mock_db_connection_readonly,
+):
     """CTE containing a write is caught by the regex (starts with WITH, not SELECT)."""
     async with Client(mcp) as client:
         with pytest.raises(ToolError, match="Only SELECT queries are allowed."):
             await client.call_tool(
                 "execute_query",
-                {"query": "WITH x AS (DELETE FROM mimer_store.products WHERE 1=1) SELECT * FROM x"},
+                {
+                    "query": "WITH x AS (DELETE FROM mimer_store.products WHERE 1=1) SELECT * FROM x"
+                },
             )
 
 
 @pytest.mark.asyncio
-async def test_execute_query_leading_whitespace_write_blocked_by_regex(mock_db_connection_readonly):
+async def test_execute_query_leading_whitespace_write_blocked_by_regex(
+    mock_db_connection_readonly,
+):
     """Leading whitespace before a write statement is correctly caught by the regex."""
     async with Client(mcp) as client:
         with pytest.raises(ToolError, match="Only SELECT queries are allowed."):
@@ -520,7 +544,6 @@ async def test_get_stored_procedures_definition_failure_non_existent_procedure(
                     "procedure_name": "search",
                 },
             )
-
 
 
 @pytest.mark.asyncio

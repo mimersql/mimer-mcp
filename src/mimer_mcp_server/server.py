@@ -408,6 +408,7 @@ def list_indexes(
 
 @mcp.tool(
     description="Create an index on the specified table and columns",
+    enabled=not (config.DB_READONLY.lower() in {"1", "true", "yes"}),
 )
 def create_index(
     schema: Annotated[str, "Schema name where the table resides"],
@@ -424,6 +425,11 @@ def create_index(
         columns (list[str]): List of column names to include in the index.
     """
     try:
+        if config.DB_READONLY.lower() in {"1", "true", "yes"}:
+            raise ToolError(
+                "Tool 'create_index' is disabled because DB_READONLY is enabled. "
+                "Set DB_READONLY=false to allow write operations."
+            )
         with get_connection() as con:
             logger.debug(f"Creating index '{index_name}' on table '{schema}.{table}'")
             index_manager = IndexManager(con)

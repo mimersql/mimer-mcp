@@ -18,6 +18,17 @@ The Mimer MCP server provides you with access to database tools such as:
 - `get_stored_procedure_definition` — Get the definition of a stored procedure
 - `get_stored_procedure_parameters` — Check what parameters a stored procedure expects
 - `execute_stored_procedure` — Run a stored procedure with JSON-formatted parameters
+
+**Database Administration Tools**
+
+- `list_indexes` — List all indexes in a specified schema
+- `create_index` — Create an index on a specified table (requires `DB_READONLY=false`)
+- `get_query_plan` — Get the query optimization plan for a SQL statement
+- `get_database_stats` — Retrieve database statistics using MIMINFO and SQLMONITOR
+
+**Prompts**
+
+- `query_optimization` — Generate a guided SQL query optimization workflow
 <!-- --8<-- [end:overview] -->
 
 
@@ -401,7 +412,9 @@ The Mimer SQL server performs numerous transformatons and computes the most effi
 
 **get_database_stats**
 
-This tool gets Mimer SQL database statistics using MIMINFO and SQLMONITOR tools. Read more about [MIMINFO](https://docs.mimer.com/MimerSqlManual/latest/index.html#t=Manuals%2FManaging_DB_server%2FManaging_DB_server.htm%23TOC_MIMINFO_Systembc-6&rhtocid=_4_3_5) and [SQLMONITOR](https://docs.mimer.com/MimerSqlManual/latest/Manuals/sqlmonitor/sqlmonitor.htm).
+This tool retrieves comprehensive database statistics and runtime information from the Mimer SQL database. It combines output from two system tools: MIMINFO (showing database version, memory usage, and configuration) and SQLMONITOR (showing active sessions, SQL monitoring data, and performance metrics). This is useful for database monitoring, troubleshooting performance issues, and understanding the current state of the database.
+
+Read more about [MIMINFO](https://docs.mimer.com/MimerSqlManual/latest/index.html#t=Manuals%2FManaging_DB_server%2FManaging_DB_server.htm%23TOC_MIMINFO_Systembc-6&rhtocid=_4_3_5) and [SQLMONITOR](https://docs.mimer.com/MimerSqlManual/latest/Manuals/sqlmonitor/sqlmonitor.htm) in the official Mimer documentation.
 
 **Tool description**
 
@@ -409,12 +422,18 @@ This tool gets Mimer SQL database statistics using MIMINFO and SQLMONITOR tools.
 
 **Response example** :material-information-outline:{ title="This example uses Mimer's Example Database and may be truncated for brevity." }
 ```json
-
+{
+  "result": "MIMINFO Stats:\n...database version, memory usage, and configuration...\n\nSQLMONITOR Stats:\n...active sessions and performance metrics..."
+}
 ```
 
 ---
 
 **list_indexes**
+
+This tool lists all indexes available in a specified schema.
+
+**Tool description**
 
 #### ::: mimer_mcp_server.server.list_indexes
 
@@ -452,12 +471,42 @@ This tool gets Mimer SQL database statistics using MIMINFO and SQLMONITOR tools.
 
 ---
 
-**create_indexes**
+**create_index**
+
+This tool creates a new index on specified columns of a table within a schema. This tool is only available when `DB_READONLY=false` and automatically applies SQL identifier quoting to prevent injection attacks.
+
+!!! warning "Write Operation"
+    This is a write operation that modifies the database schema. It requires `DB_READONLY=false` to be set in the configuration.
+
+**Tool description**
 
 #### ::: mimer_mcp_server.server.create_index
 
 **Response example** :material-information-outline:{ title="This example uses Mimer's Example Database and may be truncated for brevity." }
 ```json
-
+{
+  "result": null,
+  "message": "Index 'idx_products_name' created successfully on 'mimer_store.products'"
+}
 ```
+
+---
+
+## Prompts
+
+Prompts are structured templates that guide LLMs through complex workflows by providing pre-defined instructions and context.
+
+### query_optimization
+
+This prompt generates a guided SQL query optimization workflow. It takes a SQL query as input and instructs the LLM to:
+
+1. **Analyze** — Generate the optimal execution plan using the `get_query_plan` tool to understand how Mimer SQL will execute the query
+2. **Rewrite** — Optimize the query based on the execution plan and SQL best practices
+3. **Validate** — Execute both the original and optimized queries to ensure they return identical results while improving performance
+
+This workflow is useful for identifying performance bottlenecks and learning query optimization techniques specific to Mimer SQL.
+
+**Prompt description**
+
+#### ::: mimer_mcp_server.server.query_optimization
 

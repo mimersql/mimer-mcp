@@ -408,7 +408,7 @@ def list_indexes(
 
 @mcp.tool(
     description="Create an index on the specified table and columns",
-    enabled=not (config.DB_READONLY.lower() in {"1", "true", "yes"}),
+    enabled=not (config.DB_READONLY.lower() in {"1", "true", "yes"}),  # noqa: E713
 )
 def create_index(
     schema: Annotated[str, "Schema name where the table resides"],

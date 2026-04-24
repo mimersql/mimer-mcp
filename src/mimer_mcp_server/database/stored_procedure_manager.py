@@ -241,6 +241,11 @@ class StoredProcedureManager:
                 )
                 return procedure_definition
 
+        raise ValueError(
+            "Definition not found for procedure "
+            f"{procedure_schema}.{procedure_name} despite it existing in ROUTINES metadata."
+        )
+
     def _extract_stored_procedure_comment(self, procedure_definition: str):
         """Extract a descriptive comment from a stored procedure definition.
 
@@ -439,8 +444,8 @@ class StoredProcedureManager:
             parameters: JSON string mapping parameter names to values.
 
         Returns:
-            Dict with keys: 
-                message: "Executed {procedure_schema}.{procedure_name} successfully.", 
+            Dict with keys:
+                message: "Executed {procedure_schema}.{procedure_name} successfully.",
                 result: Dict[str, Any]
 
         Behavior:
@@ -710,7 +715,9 @@ class StoredProcedureManager:
 
         # Construct CALL with the number of placeholders equal to length of ordered_argument_values
         placeholders = ", ".join(["?"] * len(ordered_argument_values))
-        qualified_name = f'{quote_ident(procedure_schema)}.{quote_ident(procedure_name)}'
+        qualified_name = (
+            f"{quote_ident(procedure_schema)}.{quote_ident(procedure_name)}"
+        )
         sql = (
             f"CALL {qualified_name}({placeholders})"
             if placeholders
@@ -725,9 +732,12 @@ class StoredProcedureManager:
         )
         with self.connection.cursor() as cursor:
             cursor.execute(sql, tuple(ordered_argument_values))
-            columns = [desc[0] for desc in cursor.description]
-            rows = cursor.fetchall()
-            result = [dict(zip(columns, row)) for row in rows]
+            if cursor.description:
+                columns = [desc[0] for desc in cursor.description]
+                rows = cursor.fetchall()
+                result = [dict(zip(columns, row)) for row in rows]
+            else:
+                result = []
 
         return {
             "message": f"Executed {procedure_schema}.{procedure_name} successfully.",

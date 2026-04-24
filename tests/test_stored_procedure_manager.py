@@ -21,6 +21,7 @@
 # See license for more details.
 
 import json
+import pytest
 from unittest.mock import MagicMock, patch
 from mimer_mcp_server.database.stored_procedure_manager import StoredProcedureManager
 
@@ -50,7 +51,9 @@ def _stub_procedure(manager, schema, name, params=None):
     """Patch validation and metadata so execute_stored_procedure can run without a DB."""
     if params is None:
         # Default: one INTEGER IN param named 'p_id' with no default
-        params = [{"p_id": {"data_type": "INTEGER", "direction": "IN", "default_value": None}}]
+        params = [
+            {"p_id": {"data_type": "INTEGER", "direction": "IN", "default_value": None}}
+        ]
 
     manager._validate_procedure_exists = MagicMock()
     manager.get_stored_procedure_parameters = MagicMock(
@@ -131,3 +134,34 @@ class TestExecuteStoredProcedureCallSQL:
 
         assert result["message"] == "Executed s.p successfully."
         assert result["result"] == [{"col1": "val1", "col2": "val2"}]
+
+    def test_no_result_set_returns_empty_result(self):
+        """CALLs that do not produce a result set should return an empty result list."""
+        manager, mock_cursor = _make_manager(call_rows=[])
+        mock_cursor.description = None
+        _stub_procedure(manager, "s", "p")
+
+        result = manager.execute_stored_procedure("s", "p", '{"p_id": 42}')
+
+        assert result["message"] == "Executed s.p successfully."
+        assert result["result"] == []
+        mock_cursor.fetchall.assert_not_called()
+
+
+class TestGetStoredProcedureDefinition:
+    """Unit tests for stored procedure definition lookup fallback behavior."""
+
+    def test_raises_when_definition_missing_from_all_sources(self):
+        """An explicit ValueError should be raised when metadata lookup returns no definition."""
+        mock_conn = MagicMock()
+        mock_cursor = MagicMock()
+        mock_cursor.fetchone.return_value = None
+        mock_cursor.fetchall.return_value = []
+        mock_conn.cursor.return_value.__enter__ = MagicMock(return_value=mock_cursor)
+        mock_conn.cursor.return_value.__exit__ = MagicMock(return_value=False)
+
+        manager = StoredProcedureManager(mock_conn)
+        manager._validate_procedure_exists = MagicMock()
+
+        with pytest.raises(ValueError, match="Definition not found for procedure s.p"):
+            manager.get_stored_procedure_definition("s", "p")

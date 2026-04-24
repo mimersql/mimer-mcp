@@ -102,3 +102,4 @@ target/
 
 #Ignore generated version file
 src/mimer_mcp_server/_version.py
+.claude/

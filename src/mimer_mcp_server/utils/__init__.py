@@ -20,9 +20,10 @@
 #
 # See license for more details.
 
-from .utils import parse_domains, format_sql_type
+from .utils import parse_domains, format_sql_type, quote_ident
 
 __all__ = [
     "parse_domains",
     "format_sql_type",
+    "quote_ident",
 ]

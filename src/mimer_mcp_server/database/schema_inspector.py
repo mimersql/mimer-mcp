@@ -23,6 +23,8 @@
 import logging
 from typing import Any, Dict, List
 
+from mimer_mcp_server.utils import quote_ident
+
 logger = logging.getLogger(__name__)
 
 
@@ -287,9 +289,9 @@ class SchemaInspector:
         )
         with self.connection.cursor() as cursor:
             query = (
-                f'SELECT * FROM "{schema}"."{table_name}" FETCH FIRST {limit} ROWS ONLY'
+                f'SELECT * FROM {quote_ident(schema)}.{quote_ident(table_name)} FETCH FIRST ? ROWS ONLY'
             )
-            cursor.execute(query)
+            cursor.execute(query, (limit,))
             columns = [desc[0] for desc in cursor.description]
             rows = cursor.fetchall()
 

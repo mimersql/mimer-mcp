@@ -23,6 +23,27 @@
 from typing import List, Tuple, Dict, Any
 
 
+def quote_ident(name: str) -> str:
+    """Quote a SQL identifier using double quotes, escaping any embedded double quotes.
+
+    This follows the SQL standard for delimited identifiers:
+    embedded double quotes are escaped by doubling them.
+
+    Args:
+        name: The identifier to quote (e.g. table name, schema name, index name).
+
+    Returns:
+        The identifier wrapped in double quotes with internal quotes escaped.
+
+    Examples:
+        >>> quote_ident("my_table")
+        '"my_table"'
+        >>> quote_ident('table"name')
+        '"table""name"'
+    """
+    return '"' + name.replace('"', '""') + '"'
+
+
 def parse_domains(ddl: str) -> List[Tuple[str, str]]:
     """Parse domain names from DDL string.
 

@@ -233,6 +233,9 @@ def execute_query(
         ValueError: if the query is not a SELECT statement.
     """
     logger.debug(f"Executing query: {query}")
+    readonly = config.DB_READONLY.lower() in {"1", "true", "yes"}
+    if readonly and not re.match(r"^\s*SELECT\b", query, re.IGNORECASE):
+        raise ToolError("Only SELECT queries are allowed.")
     try:
         with get_connection() as con:
             with con.cursor() as cursor:

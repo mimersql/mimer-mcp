@@ -39,7 +39,11 @@ Then edit the `.env` file with your database credentials and preferences.
 | `DB_POOL_MAX_CON` | `0` | Maximum number of connections allowed (0 = unlimited) |
 | `DB_POOL_BLOCK` | `false` | Determines behavior when exceeding the maximum number of connections. If `true`, block and wait for a connection to become available; if `false`, raise an error when maxconnections is exceeded |
 | `DB_POOL_DEEP_HEALTH_CHECK` | `true` | If `true`, validates connection health before getting from pool (slower but more reliable) |
+| `DB_READONLY` | `true` | Opens connections in MimerPy native read-only mode. When `true` (default), `execute_query` rejects non-SELECT statements and MimerPy blocks write operations at the driver level. Set to `false` only if write access is required. |
 | `MCP_LOG_LEVEL` | `INFO` | Logging level for the MCP server. Options: `DEBUG`, `INFO`, `WARNING`, `ERROR`, `CRITICAL` |
+
+!!! note
+	Native read-only enforcement requires MimerPy 1.3.9 or later.
 
 ---
 

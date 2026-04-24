@@ -41,5 +41,8 @@ DB_POOL_MAX_CON = os.getenv("DB_POOL_MAX_CON")
 DB_POOL_BLOCK = os.getenv("DB_POOL_BLOCK")
 DB_POOL_DEEP_HEALTH_CHECK = os.getenv("DB_POOL_DEEP_HEALTH_CHECK")
 
+# Read-only mode — set to false to allow write operations
+DB_READONLY = os.getenv("DB_READONLY", "true")
+
 # Logging configuration
 LOG_LEVEL = os.getenv("MCP_LOG_LEVEL", "INFO") or "INFO"

@@ -15,7 +15,7 @@ The architecture provides clear separation of concerns:
 - **MCP Layer**: Standardized protocol for tool discovery and invocation
 - **Database Layer**: Secure, validated database operations
 
-This separation ensures that security policies are enforced at the server level, database credentials are centrally managed, and AI agents cannot perform destructive operations.
+This separation ensures that security policies are enforced at the server level and database credentials are centrally managed. With the default `DB_READONLY=true`, AI agents cannot perform destructive operations.
 <!-- --8<-- [end:overview] -->
 
 ---

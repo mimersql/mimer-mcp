@@ -51,7 +51,7 @@ def mock_config_vars(monkeypatch):
             "maxconnections": None,
             "block": None,
             "deep_health_check": None,
-            "readonly": "true",
+            "readonly": True,
         },
     )
 
@@ -87,7 +87,7 @@ def test_init_db_pool_success(mock_config_vars, mock_mimer_pool):
 
 
 def test_init_db_pool_sets_readonly_true(mock_config_vars, mock_mimer_pool):
-    """Test pool initialization includes readonly=true in pool arguments."""
+    """Test pool initialization includes readonly=True in pool arguments."""
     with patch("mimer_mcp_server.database.connection.MimerPool") as MockPool:
         MockPool.return_value = mock_mimer_pool
         connection.init_db_pool()
@@ -96,7 +96,59 @@ def test_init_db_pool_sets_readonly_true(mock_config_vars, mock_mimer_pool):
         call_kwargs = MockPool.call_args.kwargs
 
         assert "readonly" in call_kwargs
-        assert str(call_kwargs["readonly"]).lower() == "true"
+        assert call_kwargs["readonly"] is True
+
+
+@pytest.mark.parametrize("env_value", ["true", "True", "TRUE", "1", "yes", "YES"])
+def test_init_db_pool_readonly_truthy_values(mock_config_vars, mock_mimer_pool, monkeypatch, env_value):
+    """Test that truthy DB_READONLY values result in readonly=True."""
+    monkeypatch.setattr(config, "DB_READONLY", env_value)
+    monkeypatch.setattr(connection, "DB_CONFIG", {
+        **connection.DB_CONFIG,
+        "readonly": config.DB_READONLY.lower() in {"1", "true", "yes"},
+    })
+    with patch("mimer_mcp_server.database.connection.MimerPool") as MockPool:
+        MockPool.return_value = mock_mimer_pool
+        connection.init_db_pool()
+
+        call_kwargs = MockPool.call_args.kwargs
+        assert call_kwargs["readonly"] is True
+
+
+@pytest.mark.parametrize("env_value", ["false", "False", "FALSE", "0", "no", "NO"])
+def test_init_db_pool_readonly_falsy_values(mock_config_vars, mock_mimer_pool, monkeypatch, env_value):
+    """Test that falsy DB_READONLY values result in readonly=False."""
+    monkeypatch.setattr(config, "DB_READONLY", env_value)
+    monkeypatch.setattr(connection, "DB_CONFIG", {
+        **connection.DB_CONFIG,
+        "readonly": config.DB_READONLY.lower() in {"1", "true", "yes"},
+    })
+    with patch("mimer_mcp_server.database.connection.MimerPool") as MockPool:
+        MockPool.return_value = mock_mimer_pool
+        connection.init_db_pool()
+
+        call_kwargs = MockPool.call_args.kwargs
+        assert call_kwargs["readonly"] is False
+
+
+def test_init_db_pool_readonly_default_is_true(mock_mimer_pool, monkeypatch):
+    """Test that DB_READONLY defaults to true when the env var is not set."""
+    monkeypatch.setattr(config, "DB_DSN", "test_dsn")
+    monkeypatch.setattr(config, "DB_USER", "test_user")
+    monkeypatch.setattr(config, "DB_PASSWORD", "test_password")
+    monkeypatch.setattr(config, "DB_READONLY", "true")
+    monkeypatch.setattr(connection, "DB_CONFIG", {
+        "dsn": "test_dsn",
+        "user": "test_user",
+        "password": "test_password",
+        "readonly": True,
+    })
+    with patch("mimer_mcp_server.database.connection.MimerPool") as MockPool:
+        MockPool.return_value = mock_mimer_pool
+        connection.init_db_pool()
+
+        call_kwargs = MockPool.call_args.kwargs
+        assert call_kwargs["readonly"] is True
 
 
 def test_init_db_pool_missing_dsn(monkeypatch):
@@ -160,7 +212,7 @@ def test_init_db_pool_with_custom_config(mock_config_vars, monkeypatch):
         assert call_kwargs["maxconnections"] == 20
         assert call_kwargs["block"] is False
         assert call_kwargs["deep_health_check"] is True
-        assert str(call_kwargs["readonly"]).lower() == "true"
+        assert call_kwargs["readonly"] is True
 
 
 def test_init_db_pool_creation_error(mock_config_vars):

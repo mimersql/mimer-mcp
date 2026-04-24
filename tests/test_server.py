@@ -46,6 +46,26 @@ def mock_db_connection(monkeypatch):
 
 
 @pytest.fixture
+def mock_db_connection_readonly(monkeypatch):
+    """Fixture connecting to real DB with readonly=True (requires MimerPy >= 1.3.9).
+
+    Mirrors production config where DB_READONLY defaults to true.
+    Used to verify that MimerPy's native readonly mode acts as a second
+    safety layer beyond the regex SELECT-only guard.
+    """
+    monkeypatch.setattr(
+        connection,
+        "DB_CONFIG",
+        {
+            "dsn": "testdb",
+            "user": "MIMER_STORE",
+            "password": "GoodiesRUs",
+            "readonly": True,
+        },
+    )
+
+
+@pytest.fixture
 def restore_logger_level():
     """Fixture to save and restore the server logger level after test."""
     original_level = server_logger.level
@@ -58,7 +78,7 @@ async def test_list_tools():
     """Test listing available tools."""
     async with Client(mcp) as client:
         result = await client.list_tools()
-    assert len(result) == 8
+    assert len(result) == 12
 
 
 @pytest.mark.asyncio
@@ -266,12 +286,29 @@ async def test_execute_query_success(mock_db_connection):
 
 
 @pytest.mark.asyncio
-async def test_execute_query_non_select(mock_db_connection):
-    """Test execution of non-SELECT query."""
+async def test_execute_query_non_select(mock_db_connection_readonly):
+    """Non-SELECT query is rejected when DB_READONLY=true (default)."""
     async with Client(mcp) as client:
         with pytest.raises(ToolError, match="Only SELECT queries are allowed."):
             query = """DELETE FROM mimer_store.products WHERE product_id = 1"""
             await client.call_tool("execute_query", {"query": query})
+
+
+@pytest.mark.asyncio
+async def test_execute_query_non_select_allowed_when_readonly_false(monkeypatch, mock_db_connection):
+    """Non-SELECT query is not blocked by the regex guard when DB_READONLY=false.
+
+    The query still fails (the test table/row may not exist), but the error is a
+    database error — not the SELECT-only guard — confirming the guard is skipped.
+    """
+    monkeypatch.setattr(config, "DB_READONLY", "false")
+    async with Client(mcp) as client:
+        with pytest.raises(ToolError) as exc_info:
+            await client.call_tool(
+                "execute_query",
+                {"query": "DELETE FROM mimer_store.products WHERE product_id = -1"},
+            )
+    assert "Only SELECT queries are allowed." not in str(exc_info.value)
 
 
 @pytest.mark.asyncio
@@ -335,6 +372,75 @@ async def test_execute_query_large_result_set(mock_db_connection):
         result = await client.call_tool("execute_query", {"query": query})
         assert isinstance(result.data, list)
         assert len(result.data) == 8624
+
+
+# --- SQL Injection / regex bypass tests ---
+#
+# The SELECT-only regex (re.match(r"^\s*SELECT\b", ...)) is the first line of
+# defence but can be bypassed by stacked queries that open with SELECT and
+# append a write statement after a semicolon.
+#
+# MimerPy 1.3.9 readonly=True is the second line of defence: even if a query
+# slips past the regex, the driver enforces read-only transactions at the
+# protocol level and rejects any write operation.
+#
+# The tests below also cover patterns that ARE correctly caught by the regex,
+# documenting the full threat surface.
+
+
+@pytest.mark.asyncio
+async def test_execute_query_stacked_delete_blocked(mock_db_connection_readonly):
+    """Stacked DELETE after SELECT bypasses the regex but is blocked by MimerPy readonly."""
+    async with Client(mcp) as client:
+        with pytest.raises(ToolError):
+            await client.call_tool(
+                "execute_query",
+                {"query": "SELECT 1; DELETE FROM mimer_store.products WHERE 1=1"},
+            )
+
+
+@pytest.mark.asyncio
+async def test_execute_query_stacked_update_blocked(mock_db_connection_readonly):
+    """Stacked UPDATE after SELECT bypasses the regex but is blocked by MimerPy readonly."""
+    async with Client(mcp) as client:
+        with pytest.raises(ToolError):
+            await client.call_tool(
+                "execute_query",
+                {"query": "SELECT 1; UPDATE mimer_store.products SET product = 'x' WHERE 1=1"},
+            )
+
+
+@pytest.mark.asyncio
+async def test_execute_query_stacked_insert_blocked(mock_db_connection_readonly):
+    """Stacked INSERT after SELECT bypasses the regex but is blocked by MimerPy readonly."""
+    async with Client(mcp) as client:
+        with pytest.raises(ToolError):
+            await client.call_tool(
+                "execute_query",
+                {"query": "SELECT 1; INSERT INTO mimer_store.products VALUES ('x', 1, 1.0)"},
+            )
+
+
+@pytest.mark.asyncio
+async def test_execute_query_cte_with_write_blocked_by_regex(mock_db_connection_readonly):
+    """CTE containing a write is caught by the regex (starts with WITH, not SELECT)."""
+    async with Client(mcp) as client:
+        with pytest.raises(ToolError, match="Only SELECT queries are allowed."):
+            await client.call_tool(
+                "execute_query",
+                {"query": "WITH x AS (DELETE FROM mimer_store.products WHERE 1=1) SELECT * FROM x"},
+            )
+
+
+@pytest.mark.asyncio
+async def test_execute_query_leading_whitespace_write_blocked_by_regex(mock_db_connection_readonly):
+    """Leading whitespace before a write statement is correctly caught by the regex."""
+    async with Client(mcp) as client:
+        with pytest.raises(ToolError, match="Only SELECT queries are allowed."):
+            await client.call_tool(
+                "execute_query",
+                {"query": "   \n\t  DELETE FROM mimer_store.products WHERE 1=1"},
+            )
 
 
 @pytest.mark.asyncio

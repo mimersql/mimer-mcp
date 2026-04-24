@@ -83,7 +83,9 @@ Database administrators can expose specific stored procedures to AI applications
 - Access computed metrics and KPIs
 - Maintain consistent business logic across applications
 
-This read-only access ensures that AI agents cannot accidentally modify or delete data, providing peace of mind for production deployments.
+By default (`DB_READONLY=true`), read-only access ensures that AI agents cannot accidentally modify or delete data, providing peace of mind for production deployments.
+
+If you explicitly set `DB_READONLY=false`, write operations can be allowed for workflows that require them.
 
 !!! tip 
 

@@ -10,7 +10,7 @@ The Mimer MCP server provides you with access to database tools such as:
 
 **Query Execution Tools**
 
-- `execute_query` — Run SQL SELECT queries with parameter support for safe, read-only operations
+- `execute_query` — Run SQL queries with parameter support. By default (`DB_READONLY=true`), only SELECT statements are accepted and write operations are blocked natively by MimerPy.
 
 **Stored Procedure Tools**
 
@@ -165,7 +165,14 @@ This tool provides comprehensive information about specified tables, including t
 
 **execute_query**
 
-This tool allows you to execute read-only SQL SELECT queries against the connected database. It returns results as a list of dictionaries, where each dictionary represents a row with column names as keys. For security reasons, this tool only accepts SELECT statements and will reject any data modification queries (INSERT, UPDATE, DELETE, etc.).
+This tool executes SQL queries against the connected database and returns results as a list of dictionaries, where each dictionary represents a row with column names as keys.
+
+By default (`DB_READONLY=true`), it applies two layers of protection:
+
+1. Server-side guard: non-SELECT statements are rejected.
+2. Driver-level guard: MimerPy opens the connection in native read-only mode and blocks write operations.
+
+If `DB_READONLY=false`, the SELECT-only server guard is disabled for this tool.
 
 
 !!! example annotate "Example prompts that may invoke this tool (1)" 
@@ -205,7 +212,7 @@ This tool allows you to execute read-only SQL SELECT queries against the connect
 ```
 
 !!! warning "Security Note"
-    Only SELECT queries are permitted. This ensures that the tool cannot be used to modify, delete, or corrupt data in the database.
+    With the default `DB_READONLY=true`, non-SELECT queries are rejected and write operations are blocked by MimerPy at the driver level (requires MimerPy 1.3.9+). If you set `DB_READONLY=false`, this protection is relaxed.
 
 ---
 

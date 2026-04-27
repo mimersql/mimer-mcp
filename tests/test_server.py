@@ -100,6 +100,53 @@ async def test_ping():
         assert True  # If no exception, ping is successful
 
 
+@pytest.mark.asyncio
+async def test_tool_annotations_readonly_tools_exposed():
+    """Read-only tools expose read-safe MCP annotation hints."""
+    async with Client(mcp) as client:
+        tools = await client.list_tools()
+
+    tools_by_name = {tool.name: tool for tool in tools}
+    list_schemas_annotations = tools_by_name["list_schemas"].annotations
+    assert list_schemas_annotations.readOnlyHint is True
+    assert list_schemas_annotations.idempotentHint is True
+    assert list_schemas_annotations.openWorldHint is False
+
+    get_query_plan_annotations = tools_by_name["get_query_plan"].annotations
+    assert get_query_plan_annotations.readOnlyHint is True
+    assert get_query_plan_annotations.idempotentHint is True
+    assert get_query_plan_annotations.openWorldHint is False
+
+
+@pytest.mark.asyncio
+async def test_tool_annotations_write_and_conditional_execute_query():
+    """Write tools and execute_query expose the expected MCP annotation hints."""
+    async with Client(mcp) as client:
+        tools = await client.list_tools()
+
+    tools_by_name = {tool.name: tool for tool in tools}
+    readonly = config.DB_READONLY.lower() in {"1", "true", "yes"}
+
+    execute_query_annotations = tools_by_name["execute_query"].annotations
+    if readonly:
+        assert execute_query_annotations.readOnlyHint is True
+        assert execute_query_annotations.idempotentHint is True
+        assert execute_query_annotations.openWorldHint is False
+        assert execute_query_annotations.destructiveHint is None
+        assert "create_index" not in tools_by_name
+    else:
+        assert execute_query_annotations.readOnlyHint is False
+        assert execute_query_annotations.destructiveHint is True
+        assert execute_query_annotations.idempotentHint is False
+        assert execute_query_annotations.openWorldHint is False
+
+        create_index_annotations = tools_by_name["create_index"].annotations
+        assert create_index_annotations.readOnlyHint is False
+        assert create_index_annotations.destructiveHint is False
+        assert create_index_annotations.idempotentHint is False
+        assert create_index_annotations.openWorldHint is False
+
+
 ## --- Tests for Logging Setup ---
 
 

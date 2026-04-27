@@ -24,6 +24,7 @@ import os
 from fastmcp import FastMCP
 from fastmcp.exceptions import ToolError
 from fastmcp.prompts import Message
+from mcp.types import ToolAnnotations
 from pydantic import Field
 from mimer_mcp_server.database import (
     DDLGenerator,
@@ -110,10 +111,28 @@ async def lifespan(server: FastMCP):
 
 # Create MCP server
 mcp = FastMCP(name="Mimer MCP Server", lifespan=lifespan)
+READ_ONLY_INTERNAL_ANNOTATIONS = ToolAnnotations(
+    readOnlyHint=True,
+    idempotentHint=True,
+    openWorldHint=False,
+)
+# Shared annotation profile for reversible write tools.
+# Use this for state-changing operations that are not read-only,
+# are generally non-idempotent, and are not inherently destructive.
+# If a new write tool can permanently delete/overwrite data, prefer
+# an explicit per-tool annotation with destructiveHint=True.
+WRITE_OPERATION_ANNOTATIONS = ToolAnnotations(
+    readOnlyHint=False,
+    destructiveHint=False,
+    idempotentHint=False,
+    openWorldHint=False,
+)
 
 
 @mcp.tool(
     description="List all available schemas in the database",
+    tags={"read"},
+    annotations=READ_ONLY_INTERNAL_ANNOTATIONS,
 )
 def list_schemas() -> list[str]:
     """List all available schemas in the database.
@@ -134,6 +153,8 @@ def list_schemas() -> list[str]:
 
 @mcp.tool(
     description="List table names from the specified schema",
+    tags={"read"},
+    annotations=READ_ONLY_INTERNAL_ANNOTATIONS,
 )
 def list_table_names(
     schema: Annotated[str, "Schema name to filter tables"],
@@ -180,7 +201,11 @@ def list_table_names(
         raise ToolError(f"Error listing table names for schema '{schema}': {e}")
 
 
-@mcp.tool(description="Get detailed table schemas and sample rows")
+@mcp.tool(
+    description="Get detailed table schemas and sample rows",
+    tags={"read"},
+    annotations=READ_ONLY_INTERNAL_ANNOTATIONS,
+)
 def get_table_info(
     table_names: Annotated[list[str], "Names of the tables"],
     schema: Annotated[str, "Schema name"],
@@ -215,6 +240,19 @@ def get_table_info(
 
 @mcp.tool(
     description="Execute a SQL SELECT query and return the results as a list of dictionaries",
+    tags={
+        "write" if config.DB_READONLY.lower() not in {"1", "true", "yes"} else "read"
+    },
+    annotations=(
+        READ_ONLY_INTERNAL_ANNOTATIONS
+        if config.DB_READONLY.lower() in {"1", "true", "yes"}
+        else ToolAnnotations(
+            readOnlyHint=False,
+            destructiveHint=True,
+            idempotentHint=False,
+            openWorldHint=False,
+        )
+    ),
 )
 def execute_query(
     query: Annotated[str, "SQL query to execute"],
@@ -252,6 +290,8 @@ def execute_query(
 
 @mcp.tool(
     description="List all stored procedures in the database",
+    tags={"read"},
+    annotations=READ_ONLY_INTERNAL_ANNOTATIONS,
 )
 def list_stored_procedures() -> list[dict]:
     """List all stored procedures in the database (only 'READS SQL DATA' procedures).
@@ -269,6 +309,8 @@ def list_stored_procedures() -> list[dict]:
 
 @mcp.tool(
     description="Get the definition of a stored procedure",
+    tags={"read"},
+    annotations=READ_ONLY_INTERNAL_ANNOTATIONS,
 )
 def get_stored_procedure_definition(
     procedure_schema: Annotated[str, "Schema name of the stored procedure"],
@@ -299,6 +341,8 @@ def get_stored_procedure_definition(
 
 @mcp.tool(
     description="Get the parameters of a stored procedure",
+    tags={"read"},
+    annotations=READ_ONLY_INTERNAL_ANNOTATIONS,
 )
 def get_stored_procedure_parameters(
     procedure_schema: Annotated[str, "Schema name of the stored procedure"],
@@ -329,6 +373,8 @@ def get_stored_procedure_parameters(
 
 @mcp.tool(
     description="Execute a stored procedure in the database. Call this tool with the appropriate stored procedure name and parameters based on what procedures are available (use list_stored_procedures first if unsure).",
+    tags={"read"},
+    annotations=READ_ONLY_INTERNAL_ANNOTATIONS,
 )
 def execute_stored_procedure(
     procedure_schema: Annotated[str, "Schema name of the stored procedure"],
@@ -364,6 +410,7 @@ def execute_stored_procedure(
 
 @mcp.tool(
     description="Get database statistics",
+    annotations=READ_ONLY_INTERNAL_ANNOTATIONS,
 )
 def get_database_stats() -> str:
     """Get Mimer SQL database statistics using miminfo and sqlmonitor tools.
@@ -384,6 +431,7 @@ def get_database_stats() -> str:
 
 @mcp.tool(
     description="List all indexes in the specified schema",
+    annotations=READ_ONLY_INTERNAL_ANNOTATIONS,
 )
 def list_indexes(
     schema: Annotated[str, "Schema name to filter indexes"],
@@ -408,7 +456,8 @@ def list_indexes(
 
 @mcp.tool(
     description="Create an index on the specified table and columns",
-    enabled=not (config.DB_READONLY.lower() in {"1", "true", "yes"}),  # noqa: E713
+    tags={"write"},
+    annotations=WRITE_OPERATION_ANNOTATIONS,
 )
 def create_index(
     schema: Annotated[str, "Schema name where the table resides"],
@@ -425,11 +474,6 @@ def create_index(
         columns (list[str]): List of column names to include in the index.
     """
     try:
-        if config.DB_READONLY.lower() in {"1", "true", "yes"}:
-            raise ToolError(
-                "Tool 'create_index' is disabled because DB_READONLY is enabled. "
-                "Set DB_READONLY=false to allow write operations."
-            )
         with get_connection() as con:
             logger.debug(f"Creating index '{index_name}' on table '{schema}.{table}'")
             index_manager = IndexManager(con)
@@ -444,8 +488,13 @@ def create_index(
         )
 
 
+if config.DB_READONLY.lower() in {"1", "true", "yes"}:
+    mcp.disable(tags={"write"})
+
+
 @mcp.tool(
     description="Get the query plan for a SQL query",
+    annotations=READ_ONLY_INTERNAL_ANNOTATIONS,
 )
 def get_query_plan(
     sql_query: Annotated[str, "SQL query to get the execution plan for"],
@@ -501,7 +550,6 @@ Let’s think step by step and show your reasoning before showing the final outp
 
 def main():
     """Entry point for the Mimer MCP server"""
-    # setup_logging(level=config.LOG_LEVEL)
 
     # Start the server
     logger.info("Starting Mimer MCP server...")

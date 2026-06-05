@@ -424,6 +424,23 @@ async def test_execute_query_with_param(mock_db_connection):
 
 
 @pytest.mark.asyncio
+async def test_execute_query_async_returns_correct_results(mock_db_connection):
+    """Verify execute_query still returns correct results after the async conversion.
+
+    NOTE: FastMCP's in-process test Client does not expose a way to assert that
+    progress notifications were emitted (no progress-event hook on Client). The
+    async/await path and the two ctx.report_progress() calls are exercised by the
+    tool executing end-to-end; client-side progress assertion is not possible here.
+    """
+    async with Client(mcp) as client:
+        query = "SELECT product_id FROM mimer_store.products FETCH FIRST 1 ROWS ONLY"
+        result = await client.call_tool("execute_query", {"query": query})
+    assert isinstance(result.data, list)
+    assert len(result.data) == 1
+    assert "product_id" in result.data[0]
+
+
+@pytest.mark.asyncio
 async def test_execute_query_large_result_set(mock_db_connection):
     """Test execution of query returning a large result set."""
     async with Client(mcp) as client:

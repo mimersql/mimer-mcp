@@ -225,6 +225,14 @@ If `DB_READONLY=false`, the SELECT-only server guard is disabled for this tool.
 !!! warning "Security Note"
     With the default `DB_READONLY=true`, non-SELECT queries are rejected and write operations are blocked by MimerPy at the driver level (requires MimerPy 1.3.9+). If you set `DB_READONLY=false`, this protection is relaxed.
 
+#### Progress
+
+> Progress reporting requires clients to support progress handling. Clients must send a
+> `progressToken` in the initial request to receive progress updates. If no progress token
+> is provided, progress calls have no effect (they don't error). See
+> [Client Progress](https://gofastmcp.com/clients/progress) for details on implementing
+> client-side progress handling.
+
 ---
 
 ### Stored Procedure Tools

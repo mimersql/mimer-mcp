@@ -21,7 +21,7 @@
 # See license for more details.
 
 import os
-from fastmcp import FastMCP
+from fastmcp import FastMCP, Context
 from fastmcp.exceptions import ToolError
 from fastmcp.prompts import Message
 from mcp.types import ToolAnnotations
@@ -240,6 +240,7 @@ def get_table_info(
 
 @mcp.tool(
     description="Execute a SQL SELECT query and return the results as a list of dictionaries",
+    timeout=300.0,
     tags={
         "write" if config.DB_READONLY.lower() not in {"1", "true", "yes"} else "read"
     },
@@ -254,15 +255,17 @@ def get_table_info(
         )
     ),
 )
-def execute_query(
+async def execute_query(
     query: Annotated[str, "SQL query to execute"],
     params: Annotated[list[str], "Parameters for the SQL query"] = [],
+    ctx: Context = None,
 ) -> list[dict]:
     """Execute a SQL query and return the results as a list of dictionaries.
 
     Args:
         query (str): The SQL query to execute.
         params (list[str]): Parameters for the SQL query.
+        ctx (Context): Injected by FastMCP — not exposed as an MCP input parameter.
 
     Returns:
         A list of rows, each represented as a dictionary mapping column names to values.
@@ -274,6 +277,7 @@ def execute_query(
     readonly = config.DB_READONLY.lower() in {"1", "true", "yes"}
     if readonly and not re.match(r"^\s*SELECT\b", query, re.IGNORECASE):
         raise ToolError("Only SELECT queries are allowed.")
+    await ctx.report_progress(progress=0)
     try:
         with get_connection() as con:
             with con.cursor() as cursor:
@@ -282,6 +286,7 @@ def execute_query(
                 rows = cursor.fetchall()
                 result = [dict(zip(columns, row)) for row in rows]
                 logger.debug(f"Read query returned {len(result)} rows")
+                await ctx.report_progress(progress=1)
                 return result
     except Exception as e:
         logger.error(f"Database error executing query '{query}': {e}")

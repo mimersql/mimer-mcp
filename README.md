@@ -134,7 +134,7 @@ The Mimer SQL database will be stored in the docker volume called `mimer_mcp_dat
 }
 ```
 
-### Option 2.1: Using uv
+### Option 2.1: Using uvx
 
 [![Install in VS Code](https://img.shields.io/badge/VS_Code-Install_Mimer_MCP_Server-0098FF?style=flat&logo=visualstudiocode&logoColor=ffffff)](vscode:mcp/install?%7B%22name%22%3A%22mimer-mcp-server%22%2C%22type%22%3A%22stdio%22%2C%22command%22%3A%22uv%22%2C%22args%22%3A%5B%22run%22%2C%22--with%22%2C%22fastmcp%22%2C%22fastmcp%22%2C%22run%22%2C%22%2Fabsolute%2Fpath%2Fto%2Fserver.py%22%5D%7D)
 
@@ -154,6 +154,8 @@ The Mimer SQL database will be stored in the docker volume called `mimer_mcp_dat
 	}
 }
 ```
+
+### Option 2.2: Using uv
 
 ```json
 {

@@ -33,6 +33,7 @@ services:
       - mimer_net
     environment:
       CREATE_EXAMPLEDB: "YES"
+      MIMER_SYSADM_PASSWORD: ${MIMER_SYSADM_PASSWORD:-SYSPASS}
 
   mimer-mcp-server:
     image: mimer-mcp-server:latest

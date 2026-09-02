@@ -26,7 +26,7 @@ jsonschema-specifications==2025.9.1
 lazy-object-proxy==1.12.0
 markdown-it-py==4.0.0
 markupsafe==3.0.3
-mimerpy==1.3.10
+mimerpy==1.3.11
 mdurl==0.1.2
 mimerpy==1.3.9
 more-itertools==10.8.0

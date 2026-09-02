@@ -1147,7 +1147,7 @@ dev = [
 requires-dist = [
     { name = "fastmcp", specifier = ">=3.0.0" },
     { name = "mcp", specifier = ">=1.24.0" },
-    { name = "mimerpy", specifier = ">=1.3.10" },
+    { name = "mimerpy", specifier = ">=1.3.11" },
     { name = "python-dotenv", specifier = ">=1.1.1" },
 ]
 
@@ -1166,11 +1166,11 @@ dev = [
 
 [[package]]
 name = "mimerpy"
-version = "1.3.10"
+version = "1.3.11"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/ab/d4/2a3da290944fd35a8114f85cf678c75346898464961f459fc2a22718ffe0/mimerpy-1.3.10.tar.gz", hash = "sha256:d24496b931e8ed9f86b306837eb248129ea8e758f5013b105662e2932e755850", size = 100166, upload-time = "2026-05-20T10:48:58.203Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/cd/97/f31892128deafcc0d0b0b22281b2d15b49eb6f3b3faf77a50ec9b0953596/mimerpy-1.3.11.tar.gz", hash = "sha256:d08d575752d71799ba79859ac3e3ab8a8eb988cfc95aee074b6276d506cf4e05", size = 102815, upload-time = "2026-09-02T12:54:46.154Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/01/75/51ea8162ef8680c465510b39a34c7e2aa6e40e0ad0f92faec8d517eb5de5/mimerpy-1.3.10-py3-none-any.whl", hash = "sha256:112dd9b1f43b49896e778adce01d38034725e220b4b09df6c1f472cd86bab792", size = 37614, upload-time = "2026-05-20T10:48:56.862Z" },
+    { url = "https://files.pythonhosted.org/packages/86/a8/5ff3dadaeaae28065d58608f9425d4508df1093a8885929969207be60ab6/mimerpy-1.3.11-py3-none-any.whl", hash = "sha256:bee5bed1dce71b4fdcba8a75f3a1cd0c3c852b4358965103b2b76634e98209f4", size = 38816, upload-time = "2026-09-02T12:54:44.804Z" },
 ]
 
 [[package]]

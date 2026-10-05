@@ -267,7 +267,7 @@ Note: MCP Inspector is a Node.js app and the npx command allows running MCP Insp
 
 Alternatively, you can use FastMCP CLI to start the MCP inspector
 ```bash
-uv run fastmcp dev /absolute/path/to/server.py
+uv run fastmcp dev inspector src/mimer_mcp_server/server.py
 ```
 
 To run the Mimer SQL docker image and mimer-mcp-server using Docker compose, run:
